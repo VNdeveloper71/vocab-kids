@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quản trị – Từ Vựng Vui</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="admin-page">
+<header class="top">
+  <a class="logo" href="index.html">🎈 Từ Vựng Vui</a>
+  <div class="admin-nav">
+    <span class="admin-badge">🛠️ Khu vực giáo viên</span>
+    <a class="btn s" href="index.html">← Trang học</a>
+    <button class="btn s" id="out" hidden>Thoát</button>
+  </div>
+</header>
+<main>
+  <section class="admin-welcome">
+    <div>
+      <span class="eyebrow">📋 Bảng điều khiển</span>
+      <h1>Quản lý nội dung học tập</h1>
+      <p class="lead">Thêm bộ từ và từ vựng mới để các bạn nhỏ có thêm điều hay để khám phá.</p>
+    </div>
+    <div class="admin-mascot" aria-hidden="true">🧑‍🏫</div>
+  </section>
+  <section id="login" hidden>
+    <div class="admin-login-card">
+      <div class="login-mascot" aria-hidden="true">🔐</div>
+      <h2>Chào mừng trở lại!</h2>
+      <p>Đăng nhập bằng tài khoản quản trị để tiếp tục.</p>
+      <form id="lf" class="panel">
+        <label>Tài khoản <input id="lu" required autocomplete="username"></label>
+        <label>Mật khẩu <input id="lp" type="password" required autocomplete="current-password"></label>
+        <p id="le" class="err"></p>
+        <button class="btn">Đăng nhập</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="panel" hidden>
+    <div class="two">
+      <form id="deckForm" class="panel">
+        <div class="admin-form-heading"><span>🗂️</span><div><h2>Tạo bộ từ mới</h2><p>Mở thêm một chủ đề để bé khám phá.</p></div></div>
+        <label>Tên bộ <input id="dt" required placeholder="Ví dụ: Màu sắc"></label>
+        <label>Biểu tượng (emoji) <input id="de" maxlength="4" value="📚"></label>
+        <label>Giá (xu) <input id="dp" type="number" min="0" value="50" required></label>
+        <button class="btn admin-submit">✨ Tạo bộ từ</button>
+      </form>
+      <form id="wordForm" class="panel">
+        <div class="admin-form-heading"><span>🔤</span><div><h2>Thêm từ vựng</h2><p>Bổ sung từ mới vào bộ đã chọn.</p></div></div>
+        <label>Bộ từ <select id="wd"></select></label>
+        <label>Từ tiếng Anh <input id="we" required></label>
+        <label>Phiên âm <input id="wi" placeholder="/dɒɡ/" required></label>
+        <label>Nghĩa tiếng Việt <input id="wv" required></label>
+        <label>Câu ví dụ <input id="wx" required placeholder="The dog barks."></label>
+        <button class="btn admin-submit">➕ Thêm từ</button>
+      </form>
+    </div>
+    <div class="section-heading admin-list-heading">
+      <div><span class="eyebrow">📚 Thư viện học tập</span><h2>Danh sách bộ từ</h2></div>
+      <span class="section-sticker" aria-hidden="true">🧩</span>
+    </div>
+    <div id="list"></div>
+  </section>
+</main>
+<script src="js/storage.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
