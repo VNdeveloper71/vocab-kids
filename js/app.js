@@ -9,7 +9,7 @@ const gameTypes = [
   { id: 'memory', icon: '🃏', title: 'Lật thẻ tìm cặp', age: '5–9 tuổi', text: 'Ghép từ tiếng Anh với nghĩa tiếng Việt.' },
   { id: 'spell', icon: '🔤', title: 'Xếp chữ', age: '7–12 tuổi', text: 'Nghe gợi ý rồi xếp các chữ thành từ.' },
   { id: 'sentence', icon: '✏️', title: 'Điền từ vào câu', age: '9–12 tuổi', text: 'Chọn từ còn thiếu trong câu ví dụ.' },
-  { id: 'truefalse', icon: '⏱️', title: 'Đúng hay sai trong 60 giây', age: '8–12 tuổi', text: 'Đọc nghĩa và trả lời nhanh trong 60 giây.' }
+  { id: 'truefalse', icon: '⏱️', title: 'Đúng hay sai trong 60 giây', age: '8–12 tuổi', text: 'Đọc và trả lời nhanh trong 60 giây.' }
 ];
 
 function speak(text) {
@@ -309,7 +309,7 @@ function renderGameQuestion() {
   } else {
     const prompt = game.question.prompt;
     body = `<div id="gameTimer" class="timer">⏱️ ${game.secondsLeft} giây</div>
-      <p>Đúng hay sai?</p><div class="statement">${esc(prompt.en)} = ${esc(prompt.meaning)}</div>
+      <p>Đúng hay sai?</p><div class="statement">${esc(prompt.en)}: ${esc(prompt.meaning)}</div>
       <div class="row centered"><button class="btn ok" data-truth="true" ${game.answered ? 'disabled' : ''}>Đúng</button>
       <button class="btn del" data-truth="false" ${game.answered ? 'disabled' : ''}>Sai</button></div>
       <p id="gameFeedback" class="game-feedback" aria-live="polite"></p>`;
