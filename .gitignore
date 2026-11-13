@@ -1,5 +1,4 @@
 # Local frontend credentials/configuration
-js/supabase-config.js
 .env
 .env.*
 !.env.example

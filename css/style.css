@@ -28,6 +28,10 @@ h3{line-height:1.25}
 .section-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:10px}
 .section-heading .eyebrow{margin-bottom:2px}
 .section-sticker{display:grid;place-items:center;width:52px;height:52px;border-radius:17px;background:#fff0c8;font-size:1.7rem;box-shadow:0 4px 12px rgba(36,59,83,.08)}
+.app-status{padding:12px 16px;margin:0 0 18px;border:1px solid #c9d9ef;border-radius:14px;background:#eef6ff;color:#315b8e;font-weight:800}
+.app-status.error{border-color:#f1c4c6;background:#fff1f1;color:#a52b31}
+.app-status.success,.success-message{color:#216e4b}
+.success-message{font-weight:800;min-height:1.2em;margin:0}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:20px;margin-top:20px}
 .card,.panel{position:relative;background:var(--card);border:1px solid rgba(36,59,83,.09);border-radius:24px;padding:21px;box-shadow:var(--shadow)}
 .card{transition:transform .18s ease,box-shadow .18s ease}
@@ -64,9 +68,15 @@ dialog::backdrop{background:rgba(28,48,69,.46);backdrop-filter:blur(3px)}
 .panel{box-shadow:var(--shadow)}
 .deckrow{border:1px solid #e0e8ef;border-radius:18px;background:linear-gradient(120deg,#fff,#f7fbff);padding:17px 19px;margin:14px 0;box-shadow:0 5px 16px rgba(36,59,83,.05)}
 .deckrow>b{display:inline-block;margin-right:6px;font-size:1.12rem}
+.deckrow-heading{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.deckrow-heading>b{font-size:1.12rem}
+.admin-badge.unpublished{background:#fff3d4;color:#795b12}
+.deck-edit,.word-edit{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));align-items:end;gap:10px;margin:12px 0}
+.deck-edit label,.word-edit label{margin:0;font-size:.88rem}
+.deck-edit .btn,.word-edit .btn{width:max-content;margin:0 0 2px}
+.publish-toggle input{display:inline-block;width:auto;margin-right:5px}
 .deckrow ul{padding-left:23px;margin-bottom:4px}
-.deckrow li{margin:8px 0;padding-left:4px;color:#415971}
-.deckrow li .btn{margin-left:7px}
+.deckrow li{margin:8px 0;padding:8px;color:#415971;border-radius:12px;background:#fff}
 #user{display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-size:.96rem}
 #user b{color:#315f9e}
 .games>.lead{margin-bottom:12px}
@@ -102,6 +112,7 @@ blockquote{font-size:1.35rem;font-weight:800;background:#edf5ff;border-radius:16
 .admin-page{background:radial-gradient(ellipse at 90% 15%,rgba(219,232,255,.52),transparent 33%),var(--bg)}
 .admin-nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .admin-badge{color:#596e84;font-size:.9rem;font-weight:800}
+.deckrow .admin-badge{display:inline-block;padding:3px 9px;border-radius:20px;background:#e8f8ef;color:#276749}
 .admin-welcome{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:28px 34px;margin-bottom:28px;border-radius:24px;background:linear-gradient(115deg,#e9f3ff,#f3efff);border:1px solid #e0e9fa}
 .admin-welcome h1{font-size:clamp(1.7rem,4vw,2.6rem)}
 .admin-welcome .lead{margin-bottom:0}
