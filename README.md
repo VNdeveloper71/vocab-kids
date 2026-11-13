@@ -14,7 +14,7 @@ Website học tiếng Anh cho trẻ em bằng thẻ từ và trò chơi. Tài kh
 
 `profiles`, `decks`, `words`, `user_decks`, `daily_rewards`, `game_sessions`, `game_questions`, `game_cards`, `coin_transactions`.
 
-`game_questions` và `game_cards` không có policy đọc trực tiếp. Các RPC chỉ trả đề bài/thẻ cần thiết, giữ đáp án đúng ở database và ghi điểm sau khi kiểm tra câu trả lời. Mua bộ khóa hồ sơ người dùng trong transaction, kiểm tra số dư và quyền sở hữu trước khi trừ xu. Thưởng từ trò chơi và đăng nhập cùng dùng giới hạn 30 xu/ngày theo múi giờ Việt Nam.
+`game_questions` và `game_cards` không có policy đọc trực tiếp. Các RPC chỉ trả đề bài/thẻ cần thiết, giữ đáp án đúng ở database và ghi điểm sau khi kiểm tra câu trả lời. Mua bộ khóa hồ sơ người dùng trong transaction, kiểm tra số dư và quyền sở hữu trước khi trừ xu. Thưởng từ trò chơi và đăng nhập cùng dùng giới hạn 100 xu/ngày theo múi giờ Việt Nam.
 
 ## Cài đặt Supabase
 
@@ -27,7 +27,8 @@ Website học tiếng Anh cho trẻ em bằng thẻ từ và trò chơi. Tài kh
    supabase db push
    ```
 
-   Lệnh `db push` chạy migration trong `supabase/migrations/`, tạo schema, seed hai bộ từ mẫu, RLS và các RPC. Có thể chạy migration qua SQL Editor thay thế; không chạy lặp SQL migration đã áp dụng.
+   Lệnh `db push` chạy các migration trong `supabase/migrations/`, tạo schema, seed hai bộ từ mẫu, RLS, RPC và các cập nhật sau này. Nếu chạy SQL thủ công trong SQL Editor, chỉ chạy từng migration mới một lần theo thứ tự; không chạy lặp migration đã áp dụng.
+   Nếu project đã chạy migration khởi tạo trước đó bằng SQL Editor, hãy chạy riêng migration mới nhất chưa áp dụng, hiện tại là `supabase/migrations/20261113000001_fix_listening_choices_and_daily_cap.sql`. Không chạy lại migration khởi tạo.
 3. Trong **Authentication → URL Configuration**, đặt Site URL theo địa chỉ triển khai, ví dụ `https://your-site.example`. Thêm URL localhost dùng khi phát triển vào Redirect URLs. Bật xác nhận email, đặt độ dài mật khẩu tối thiểu 8 ký tự và cấu hình SMTP nếu muốn email xác nhận được gửi ổn định trong production.
 4. Trong **Project Settings → API**, lấy Project URL và **Publishable key** (`sb_publishable_...`). Không dùng `service_role`, secret key hay database password trên frontend.
 5. Tạo `js/supabase-config.js` bằng cách sao chép `js/supabase-config.example.js`, rồi thay URL và publishable key bằng giá trị của project:
@@ -84,7 +85,7 @@ Các mục dưới đây là checklist để chạy trên project Supabase đã 
 - [ ] Student: thử insert vào `user_decks`, `daily_rewards`, `game_sessions`, `game_questions`, `game_cards` và `coin_transactions` — phải bị chặn.
 - [ ] Student thiếu xu: `purchase_deck` thất bại, số dư không âm và không có giao dịch mua được ghi.
 - [ ] Student mua cùng deck đồng thời/lặp lại: chỉ một quyền sở hữu; không bị trừ xu hai lần.
-- [ ] Student gọi thưởng đăng nhập nhiều lần cùng ngày: chỉ nhận một lần; game + login không vượt 30 xu/ngày.
+- [ ] Student gọi thưởng đăng nhập nhiều lần cùng ngày: chỉ nhận một lần; game + login không vượt 100 xu/ngày.
 - [ ] Student thay điểm/answer request từ DevTools: chỉ câu trả lời được RPC chấm đúng mới có xu; answer replay không cộng xu lần nữa.
 - [ ] Admin đã được cấp role trong Dashboard/SQL Editor: tạo deck, thêm/xóa từ và xóa deck thành công.
 - [ ] Student hoặc anonymous gọi trực tiếp thao tác quản trị qua REST: RLS từ chối.

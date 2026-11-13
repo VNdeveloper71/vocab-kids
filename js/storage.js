@@ -79,7 +79,7 @@ const Auth = {
   },
   async dailyInfo(user) {
     user = user || await this.current();
-    if (!user) return { earned: 0, loginBonus: 0, limit: 30 };
+    if (!user) return { earned: 0, loginBonus: 0, limit: 100 };
     const result = await requireSupabase()
       .from('daily_rewards')
       .select('earned_coins, login_bonus')
@@ -90,7 +90,7 @@ const Auth = {
     return {
       earned: reward ? reward.earned_coins : 0,
       loginBonus: reward ? reward.login_bonus : 0,
-      limit: 30
+      limit: 100
     };
   },
   async startGame(deckId, gameType, memoryPairs) {

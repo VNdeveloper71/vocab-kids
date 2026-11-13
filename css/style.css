@@ -89,6 +89,7 @@ dialog::backdrop{background:rgba(28,48,69,.46);backdrop-filter:blur(3px)}
 .game-progress{display:inline-block;padding:5px 14px;border-radius:20px;background:#fff4d6;color:#745412;font-weight:900}
 .answer-grid{display:grid;grid-template-columns:repeat(2,minmax(100px,160px));justify-content:center;gap:14px;margin:20px auto}
 .answer-image{font-size:3.3rem;background:#fff;border:2px solid #dce6f0;border-radius:20px;min-height:110px;cursor:pointer;box-shadow:0 5px 0 #dce6f0}
+.answer-image span{display:block;font-size:.95rem;font-weight:800}
 .answer-image:hover,.memory-card:not(:disabled):hover,.letter-tile:hover{transform:translateY(-2px);background:#fff8e7}
 .answer-text{background:#fff;color:var(--ink);min-height:54px;box-shadow:0 4px 0 #dce6f0}
 .game-clue{font-size:1.6rem;font-weight:900;margin:18px}

@@ -284,7 +284,7 @@ function renderGameQuestion() {
       <button class="btn speak" data-say="${esc(prompt.en)}">🔊 Nghe lại</button>
       <div class="answer-grid">${prompt.choices.map((word, index) => {
         const image = emojiFor(word), fallback = ['🌟', '🎈', '🚀', '🍀'][index];
-        return `<button class="answer-image" data-choice="${esc(word.id)}" aria-label="Chọn hình ${esc(word.en)}">${image === '🌟' ? fallback : image}</button>`;
+        return `<button class="answer-image" data-choice="${esc(word.id)}" aria-label="Chọn hình ${esc(word.en)}">${image === '🌟' ? `${fallback}<span>${esc(word.en)}</span>` : image}</button>`;
       }).join('')}</div>`;
   } else if (game.type === 'spell') {
     const prompt = game.question.prompt;
@@ -332,8 +332,8 @@ async function submitAnswer(answer) {
     const result = await Auth.answerGameQuestion(game.question.id, submittedAnswer);
     game.busy = false;
     game.pendingAnswer = undefined;
-    if (result.finished) return finishGame();
     game.correct = result.correct_answers;
+    if (result.finished) return finishGame();
     const feedback = $('#gameFeedback');
     if (feedback && !result.correct) {
       feedback.textContent = `Không sao nhé! Đáp án đúng là: ${result.answer.en} – ${result.answer.vi}.`;
@@ -382,6 +382,7 @@ async function flipMemoryCard(cardId) {
     if (result.matched) {
       game.matched.add(game.flipped[0]);
       game.matched.add(game.flipped[1]);
+      game.flipped = [];
       game.correct = result.matched_pairs;
       speak(result.answer.en);
       renderGameQuestion();
@@ -430,7 +431,7 @@ async function finishGame() {
       <h2>Ván chơi hoàn thành!</h2>
       <p>Bạn trả lời đúng <b>${summary.correct_answers}</b> câu${game.type === 'truefalse' ? '' : ` trên ${summary.total_questions}`}.</p>
       <p>Nhận được <b>🪙 ${summary.coins_awarded} xu</b>${summary.bonus_coins ? ` (gồm ${summary.bonus_coins} xu thưởng chuỗi)` : ''}.</p>
-      ${daily.earned >= daily.limit ? '<p>Đã đạt giới hạn 30 xu hôm nay. Ngày mai bạn có thể kiếm thêm nhé!</p>' : ''}
+      ${daily.earned >= daily.limit ? `<p>Đã đạt giới hạn ${daily.limit} xu hôm nay. Ngày mai bạn có thể kiếm thêm nhé!</p>` : ''}
       <button class="btn" id="gameResultBack">Chơi trò khác</button>
     </div>`;
     game.finished = true;
