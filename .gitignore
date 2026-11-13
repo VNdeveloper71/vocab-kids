@@ -1,0 +1,14 @@
+# Local frontend credentials/configuration
+js/supabase-config.js
+.env
+.env.*
+!.env.example
+
+# Supabase CLI and local tooling
+supabase/.temp/
+node_modules/
+
+# Operating system / editor
+.DS_Store
+Thumbs.db
+.vscode/
