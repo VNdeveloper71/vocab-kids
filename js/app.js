@@ -92,7 +92,7 @@ function renderHeader(user) {
 }
 
 function renderDecks(user) {
-  $('#decks').innerHTML = decksCache.map(deck => `<article class="card">
+  $('#decks').innerHTML = decksCache.filter(deck => deck.is_published).map(deck => `<article class="card">
     <div class="em">${esc(deck.emoji)}</div><h3>${esc(deck.title)}</h3>
     <p>${deck.owned || user && user.role === 'admin' ? `${deck.words.length} từ vựng` : 'Bộ từ học tiếng Anh'}</p>
     ${deck.owned || user && user.role === 'admin'
