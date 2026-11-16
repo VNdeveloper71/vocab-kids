@@ -16,6 +16,7 @@ function messageFor(error) {
   if (/decks_slug_key|duplicate key/i.test(message)) return 'Tên link này đã được dùng. Hãy chọn tên khác.';
   if (/permission denied|row-level security/i.test(message)) return 'Bạn không có quyền thực hiện thao tác này.';
   if (/starter deck cannot be deleted/i.test(message)) return 'Bộ từ miễn phí cần được giữ lại cho tài khoản mới.';
+  if (/deck was not deleted/i.test(message)) return 'Bộ từ chưa bị xóa. Hãy tải lại trang và kiểm tra quyền quản trị.';
   if (/failed to fetch|network/i.test(message)) return 'Không kết nối được máy chủ. Hãy kiểm tra mạng rồi thử lại.';
   return message || 'Đã xảy ra lỗi. Vui lòng thử lại.';
 }

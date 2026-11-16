@@ -191,8 +191,13 @@ const Store = {
     throwOnError(result);
   },
   async deleteDeck(deckId) {
-    const result = await requireSupabase().from('decks').delete().eq('id', deckId);
+    const result = await requireSupabase().from('decks')
+      .delete()
+      .eq('id', deckId)
+      .select('id')
+      .maybeSingle();
     throwOnError(result);
+    if (!result.data) throw new Error('Deck was not deleted; it may be missing or access was denied');
   },
   async updateDeck(deckId, deck) {
     const result = await requireSupabase().from('decks')
