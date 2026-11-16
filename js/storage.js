@@ -37,12 +37,24 @@ function vietnamDate() {
   return `${values.year}-${values.month}-${values.day}`;
 }
 
+function slugify(value) {
+  return String(value || '').trim().toLowerCase()
+    .replace(/đ/g, 'd')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 const Auth = {
   async register(username, email, password) {
     const result = await requireSupabase().auth.signUp({
       email,
       password,
-      options: { data: { username: username.trim() } }
+      options: {
+        data: { username: username.trim() },
+        emailRedirectTo: window.location.href
+      }
     });
     const data = throwOnError(result);
     return { confirmationRequired: !data.session };
@@ -165,13 +177,12 @@ const Store = {
     }));
   },
   async createDeck(deck) {
-    const slugBase = deck.title.trim().toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '') || 'deck';
+    const requestedSlug = String(deck.slug || '').trim();
+    const customSlug = slugify(requestedSlug);
+    if (requestedSlug && !customSlug) throw new Error('Invalid deck slug');
+    const slug = customSlug || `${slugify(deck.title) || 'deck'}-${crypto.randomUUID().slice(0, 8)}`;
     const result = await requireSupabase().from('decks').insert({
-      slug: `${slugBase}-${crypto.randomUUID().slice(0, 8)}`,
+      slug,
       title: deck.title.trim(),
       emoji: deck.emoji || '📚',
       price: Number(deck.price),

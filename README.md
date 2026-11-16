@@ -7,7 +7,7 @@ Website học tiếng Anh cho trẻ em bằng thẻ từ và trò chơi. Tài kh
 - Frontend tĩnh: HTML, CSS và JavaScript hiện có.
 - Authentication và PostgreSQL: Supabase Auth + Supabase Database.
 - Truy cập dữ liệu từ trình duyệt bằng Supabase JavaScript SDK v2 và **publishable key**.
-- RLS áp dụng cho tất cả bảng trong `public`. Mua bộ, thưởng đăng nhập và chấm trò chơi thực hiện bằng PostgreSQL RPC có kiểm tra `auth.uid()`.
+- RLS áp dụng cho tất cả bảng trong `public`. Metadata của deck đã xuất bản có thể đọc công khai; từ vựng chỉ đọc được bởi chủ sở hữu deck hoặc admin. Mua bộ, thưởng đăng nhập và chấm trò chơi thực hiện bằng PostgreSQL RPC có kiểm tra `auth.uid()`.
 - Không dùng Supabase Storage vì hiện chưa có nội dung tải lên.
 
 ### Các bảng chính
@@ -15,6 +15,8 @@ Website học tiếng Anh cho trẻ em bằng thẻ từ và trò chơi. Tài kh
 `profiles`, `decks`, `words`, `user_decks`, `daily_rewards`, `game_sessions`, `game_questions`, `game_cards`, `coin_transactions`.
 
 `game_questions` và `game_cards` không có policy đọc trực tiếp. Các RPC chỉ trả đề bài/thẻ cần thiết, giữ đáp án đúng ở database và ghi điểm sau khi kiểm tra câu trả lời. Mua bộ khóa hồ sơ người dùng trong transaction, kiểm tra số dư và quyền sở hữu trước khi trừ xu. Thưởng từ trò chơi và đăng nhập cùng dùng giới hạn 100 xu/ngày theo múi giờ Việt Nam.
+
+Mỗi deck có URL chia sẻ dạng `?deck=<slug>`. Khi tạo deck, admin có thể nhập slug tiếng Anh ngắn; nếu để trống, ứng dụng tự tạo slug từ tên, chuẩn hóa dấu tiếng Việt và thêm hậu tố ngẫu nhiên. Slug có unique constraint trong database. URL chỉ định deck, không cấp quyền đọc từ; RLS trên `words` yêu cầu deck đã xuất bản và người dùng đã sở hữu deck, ngoại trừ admin.
 
 ## Cài đặt Supabase
 
@@ -28,8 +30,8 @@ Website học tiếng Anh cho trẻ em bằng thẻ từ và trò chơi. Tài kh
    ```
 
    Lệnh `db push` chạy các migration trong `supabase/migrations/`, tạo schema, seed hai bộ từ mẫu, RLS, RPC và các cập nhật sau này. Nếu chạy SQL thủ công trong SQL Editor, chỉ chạy từng migration mới một lần theo thứ tự; không chạy lặp migration đã áp dụng.
-   Nếu project đã chạy migration khởi tạo trước đó bằng SQL Editor, hãy chạy riêng migration mới nhất chưa áp dụng, hiện tại là `supabase/migrations/20261113000001_fix_listening_choices_and_daily_cap.sql`. Không chạy lại migration khởi tạo.
-3. Trong **Authentication → URL Configuration**, đặt Site URL theo địa chỉ triển khai, ví dụ `https://your-site.example`. Thêm URL localhost dùng khi phát triển vào Redirect URLs. Bật xác nhận email, đặt độ dài mật khẩu tối thiểu 8 ký tự và cấu hình SMTP nếu muốn email xác nhận được gửi ổn định trong production.
+   Nếu project đã chạy migration khởi tạo trước đó bằng SQL Editor, chỉ chạy các migration chưa áp dụng theo thứ tự. Ví dụ, nếu đã chạy `20261113000001_fix_listening_choices_and_daily_cap.sql`, chỉ chạy `supabase/migrations/20261116000000_restrict_word_access_to_deck_owners.sql`; không chạy lại migration cũ.
+3. Trong **Authentication → URL Configuration**, đặt Site URL theo địa chỉ triển khai, ví dụ `https://username.github.io/vocab-kids/`. Thêm GitHub Pages path và URL localhost vào Redirect URLs (ví dụ `https://username.github.io/vocab-kids/**` và `http://localhost:8000/**`) để email xác nhận có thể quay lại URL deck đang mở. Bật xác nhận email, đặt độ dài mật khẩu tối thiểu 8 ký tự và cấu hình SMTP nếu muốn email xác nhận được gửi ổn định trong production.
 4. Trong **Project Settings → API**, lấy Project URL và **Publishable key** (`sb_publishable_...`). Không dùng `service_role`, secret key hay database password trên frontend.
 5. Tạo `js/supabase-config.js` bằng cách sao chép `js/supabase-config.example.js`, rồi thay URL và publishable key bằng giá trị của project:
 
@@ -67,6 +69,8 @@ Chỉ chủ project/quản trị viên tin cậy thực hiện bước này. Tri
 
 Deploy `index.html`, `admin.html`, thư mục `css/`, `js/` và tệp `js/supabase-config.js` lên static hosting hỗ trợ HTTPS (ví dụ GitHub Pages, Netlify hoặc Cloudflare Pages). Tệp cấu hình production chứa URL và publishable key — key này được thiết kế để trình duyệt nhìn thấy; an toàn phụ thuộc vào RLS và RPC. Không deploy `.env` thật, secret key hoặc `service_role`.
 
+Mỗi thẻ bộ từ có nút sao chép link `?deck=<slug>` để dùng làm đích QR. Khi mở trực tiếp hoặc quét QR, ứng dụng kiểm tra phiên và quyền sở hữu; khách chưa đăng nhập được giữ nguyên URL để quay lại sau khi đăng nhập.
+
 Sau khi deploy, cập nhật Site URL/Redirect URLs trong Supabase Authentication và kiểm tra đăng ký, xác nhận email, đăng nhập, mua bộ và các trò chơi. Đăng nhập cùng một tài khoản trên thiết bị khác để kiểm tra dữ liệu cloud đồng bộ.
 
 ## Dữ liệu localStorage cũ
@@ -83,6 +87,8 @@ Các mục dưới đây là checklist để chạy trên project Supabase đã 
 - [ ] Student: thử cập nhật `profiles.role='admin'` — phải bị chặn bởi quyền cột/RLS.
 - [ ] Student: thử cập nhật `profiles.coins` — phải bị chặn.
 - [ ] Student: thử insert vào `user_decks`, `daily_rewards`, `game_sessions`, `game_questions`, `game_cards` và `coin_transactions` — phải bị chặn.
+- [ ] Student không sở hữu deck: truy vấn trực tiếp `words` theo deck phải trả về 0 hàng; owner đọc được từ của mình; admin đọc được mọi deck.
+- [ ] Mở URL `?deck=<slug>` khi đã đăng xuất, đã sở hữu, chưa sở hữu, slug không hợp lệ và deck chưa xuất bản; không nội dung từ vựng nào bị lộ cho người chưa sở hữu.
 - [ ] Student thiếu xu: `purchase_deck` thất bại, số dư không âm và không có giao dịch mua được ghi.
 - [ ] Student mua cùng deck đồng thời/lặp lại: chỉ một quyền sở hữu; không bị trừ xu hai lần.
 - [ ] Student gọi thưởng đăng nhập nhiều lần cùng ngày: chỉ nhận một lần; game + login không vượt 100 xu/ngày.

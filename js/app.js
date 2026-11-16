@@ -70,6 +70,13 @@ async function render() {
     renderDecks(currentUser);
     renderDailyNote(currentUser, results[1]);
     renderGameChoices(currentUser);
+    const deckSlug = new URLSearchParams(window.location.search).get('deck');
+    if (deckSlug !== null) renderDeckRoute(deckSlug);
+    else if (!activeGame) {
+      $('#home').hidden = false;
+      $('#study').hidden = true;
+      $('#gameScreen').hidden = true;
+    }
     setStatus('');
   } catch (error) {
     setStatus(messageFor(error), 'error');
@@ -87,12 +94,15 @@ function renderHeader(user) {
 function renderDecks(user) {
   $('#decks').innerHTML = decksCache.map(deck => `<article class="card">
     <div class="em">${esc(deck.emoji)}</div><h3>${esc(deck.title)}</h3>
-    <p>${deck.words.length} từ vựng</p>
-    ${deck.owned
+    <p>${deck.owned || user && user.role === 'admin' ? `${deck.words.length} từ vựng` : 'Bộ từ học tiếng Anh'}</p>
+    ${deck.owned || user && user.role === 'admin'
       ? `<button class="btn ok" data-open="${esc(deck.id)}">Học ngay</button>`
-      : deck.price === 0
+      : !user && deck.price === 0
         ? '<button class="btn ok" data-register>Nhận bộ miễn phí</button>'
-      : `<button class="btn" data-buy="${esc(deck.id)}">Mua bằng ${deck.price} xu</button>`}
+      : deck.price === 0
+        ? `<button class="btn ok" data-claim-deck="${esc(deck.id)}">Nhận bộ miễn phí</button>`
+        : `<button class="btn" data-buy="${esc(deck.id)}">Mua bằng ${deck.price} xu</button>`}
+    <button class="btn s" data-share-deck="${esc(deck.slug)}">Sao chép link QR</button>
   </article>`).join('') || '<p>Chưa có bộ từ nào được xuất bản.</p>';
 }
 
@@ -133,8 +143,49 @@ function updatePairOptions() {
 
 function openDeck(deckId) {
   const deck = decksCache.find(item => item.id === deckId);
-  if (!currentUser || !deck || !deck.owned) return;
+  if (!deck) return;
+  const url = new URL(window.location.href);
+  if (url.searchParams.get('deck') !== deck.slug) {
+    url.searchParams.set('deck', deck.slug);
+    history.pushState({ deck: deck.slug }, '', url);
+  }
+  renderDeckRoute(deck.slug);
+}
+
+function renderDeckRoute(slug) {
+  const deck = decksCache.find(item => item.slug === slug);
+  $('#home').hidden = true;
+  $('#gameScreen').hidden = true;
+  $('#study').hidden = false;
+
+  if (!deck) {
+    $('#studyTitle').textContent = 'Bộ từ không khả dụng';
+    $('#cards').innerHTML = '<p>Bộ từ này không tồn tại hoặc hiện không được xuất bản.</p>';
+    return;
+  }
+
   $('#studyTitle').textContent = `${deck.emoji} ${deck.title}`;
+  if (!currentUser) {
+    $('#cards').innerHTML = `<article class="card deck-access">
+      <h3>${esc(deck.title)}</h3><p>${esc(deck.emoji)} Bộ từ vựng${deck.price > 0 ? ` · ${deck.price} xu` : ' · Miễn phí'}</p>
+      <p>Đăng nhập hoặc tạo tài khoản để kiểm tra quyền sở hữu và học bộ từ này.</p>
+      <div class="row"><button class="btn" data-access-auth="login">Đăng nhập</button>
+      <button class="btn s" data-access-auth="register">Tạo tài khoản</button></div>
+    </article>`;
+    return;
+  }
+
+  if (!deck.owned && currentUser.role !== 'admin') {
+    $('#cards').innerHTML = `<article class="card deck-access">
+      <h3>${esc(deck.title)}</h3><p>${esc(deck.emoji)} Bộ từ vựng${deck.price > 0 ? ` · ${deck.price} xu` : ' · Miễn phí'}</p>
+      <p>Bạn chưa sở hữu bộ từ này. Nội dung từ vựng sẽ mở sau khi nhận hoặc mua bộ.</p>
+      ${deck.price === 0
+        ? `<button class="btn ok" data-claim-deck="${esc(deck.id)}">Nhận bộ miễn phí</button>`
+        : `<button class="btn" data-buy="${esc(deck.id)}">Mua bằng ${deck.price} xu</button>`}
+    </article>`;
+    return;
+  }
+
   $('#cards').innerHTML = deck.words.map(word => `<article class="card">
     <div class="word"><h3>${esc(word.en)}</h3><button class="btn speak" data-say="${esc(word.en)}" aria-label="Nghe phát âm ${esc(word.en)}">🔊</button></div>
     <div class="ipa">${esc(word.ipa)}</div>
@@ -145,6 +196,41 @@ function openDeck(deckId) {
   $('#gameScreen').hidden = true;
   $('#study').hidden = false;
   scrollTo(0, 0);
+}
+
+function navigateHome() {
+  const url = new URL(window.location.href);
+  url.searchParams.delete('deck');
+  if (url.href !== window.location.href) history.pushState({}, '', url);
+  $('#home').hidden = false;
+  $('#study').hidden = true;
+  $('#gameScreen').hidden = true;
+  scrollTo(0, 0);
+}
+
+async function copyDeckLink(slug) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('deck', slug);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    await navigator.clipboard.writeText(url.href);
+    setStatus('Đã sao chép link bộ từ. Có thể dùng link này để tạo mã QR.', 'success');
+  } else {
+    window.prompt('Sao chép link bộ từ để tạo mã QR:', url.href);
+  }
+}
+
+async function claimDeck(deckId) {
+  if (purchasesInProgress.has(deckId)) return;
+  purchasesInProgress.add(deckId);
+  try {
+    await Store.purchaseDeck(deckId);
+    await render();
+    openDeck(deckId);
+  } catch (error) {
+    setStatus(messageFor(error), 'error');
+  } finally {
+    purchasesInProgress.delete(deckId);
+  }
 }
 
 async function buy(deckId) {
@@ -470,6 +556,9 @@ document.addEventListener('click', event => {
   const task = async () => {
     if (target.dataset.buy) await buy(target.dataset.buy);
     else if (target.dataset.open) openDeck(target.dataset.open);
+    else if (target.dataset.shareDeck) await copyDeckLink(target.dataset.shareDeck);
+    else if (target.dataset.claimDeck) await claimDeck(target.dataset.claimDeck);
+    else if (target.dataset.accessAuth) showAuth(target.dataset.accessAuth);
     else if (target.hasAttribute('data-register')) showAuth('register');
     else if (target.dataset.say) speak(target.dataset.say);
     else if (target.dataset.game) await startGame(target.dataset.game);
@@ -504,8 +593,7 @@ document.addEventListener('click', event => {
       $('#study').hidden = true;
       await render();
     } else if (target.id === 'back') {
-      $('#home').hidden = false;
-      $('#study').hidden = true;
+      navigateHome();
     } else if (target.id === 'authSwitch') showAuth(mode === 'login' ? 'register' : 'login');
     else if (target.id === 'authClose') $('#authDlg').close();
   };
@@ -513,6 +601,7 @@ document.addEventListener('click', event => {
 });
 
 $('#gameDeck').addEventListener('change', updatePairOptions);
+window.addEventListener('popstate', () => render());
 
 $('#authForm').addEventListener('submit', event => {
   event.preventDefault();

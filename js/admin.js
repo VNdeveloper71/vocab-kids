@@ -12,6 +12,8 @@ function messageFor(error) {
   const message = String(error && error.message || error || '');
   if (message.includes('not configured')) return message;
   if (/invalid login credentials/i.test(message)) return 'Email hoặc mật khẩu chưa đúng.';
+  if (/invalid deck slug/i.test(message)) return 'Tên link cần có chữ cái tiếng Anh hoặc số.';
+  if (/decks_slug_key|duplicate key/i.test(message)) return 'Tên link này đã được dùng. Hãy chọn tên khác.';
   if (/permission denied|row-level security/i.test(message)) return 'Bạn không có quyền thực hiện thao tác này.';
   if (/starter deck cannot be deleted/i.test(message)) return 'Bộ từ miễn phí cần được giữ lại cho tài khoản mới.';
   if (/failed to fetch|network/i.test(message)) return 'Không kết nối được máy chủ. Hãy kiểm tra mạng rồi thử lại.';
@@ -50,6 +52,7 @@ async function draw() {
   $('#list').innerHTML = decks.map(deck => `<div class="deckrow">
     <div class="deckrow-heading">
       <b>${esc(deck.emoji)} ${esc(deck.title)}</b> – ${deck.price} xu – ${deck.words.length} từ
+      <code>?deck=${esc(deck.slug)}</code>
       ${deck.is_published ? '<span class="admin-badge">Đã xuất bản</span>' : '<span class="admin-badge unpublished">Bản nháp</span>'}
       ${deck.slug === 'starter' ? '<span class="admin-badge">Bộ miễn phí mặc định</span>' : `<button class="btn del" type="button" data-deck="${esc(deck.id)}">Xóa bộ</button>`}
     </div>
@@ -117,6 +120,7 @@ $('#deckForm').addEventListener('submit', event => {
     try {
       await Store.createDeck({
         title: $('#dt').value,
+        slug: $('#ds').value,
         emoji: $('#de').value,
         price: $('#dp').value
       });
